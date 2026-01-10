@@ -8,24 +8,30 @@ interface SessionStats {
     peakSteering: number;
 }
 
+interface HistoryItem {
+    throttle: number;
+    brake: number;
+    steering: number;
+}
+
 export default function SimagicPedalTelemetry() {
     const [throttle, setThrottle] = useState(0);
     const [brake, setBrake] = useState(0);
     const [steering, setSteering] = useState(0);
-    const [history, setHistory] = useState([]);
+    const [history, setHistory] = useState<HistoryItem[]>([]);
     const [connectionStatus, setConnectionStatus] = useState('polling');
     const [lastUpdate, setLastUpdate] = useState(Date.now());
-    const [debugInfo, setDebugInfo] = useState(null);
+    const [debugInfo, setDebugInfo] = useState<{ name: string; axes: { index: number; value: string }[] } | null>(null);
     const [sessionStats, setSessionStats] = useState<SessionStats>({
         startTime: Date.now(),
         peakThrottle: 0,
         peakBrake: 0,
         peakSteering: 0
     });
-    const canvasRef = useRef(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const maxHistory = 200;
-    const pollInterval = useRef(null);
-    const historyInterval = useRef(null);
+    const pollInterval = useRef<number | null>(null);
+    const historyInterval = useRef<number | null>(null);
 
     // Poll for gamepad input (SimPro devices appear as gamepads)
     useEffect(() => {
@@ -130,52 +136,53 @@ export default function SimagicPedalTelemetry() {
         const width = canvas.width;
         const height = canvas.height;
 
-        // Background with subtle gradient
-        const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-        bgGradient.addColorStop(0, '#0a0a0a');
-        bgGradient.addColorStop(1, '#1a1a1a');
-        ctx.fillStyle = bgGradient;
-        ctx.fillRect(0, 0, width, height);
+        if (ctx) {        // Background with subtle gradient
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+            bgGradient.addColorStop(0, '#0a0a0a');
+            bgGradient.addColorStop(1, '#1a1a1a');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
 
-        // Grid lines
-        ctx.strokeStyle = '#2a2a2a';
-        ctx.lineWidth = 1;
-        for (let i = 0; i <= 4; i++) {
-            const y = (height / 4) * i;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
+            // Grid lines
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = (height / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            if (history.length < 2) return;
+
+            const xStep = width / (maxHistory - 1);
+
+            // Helper to draw line with glow
+            const drawGlowLine = (color: string, glowColor: string, dataKey: keyof HistoryItem) => {
+                // Glow effect
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = glowColor;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                history.forEach((point, i) => {
+                    const x = i * xStep;
+                    const y = height - (point[dataKey] / 100) * height;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            };
+
+            drawGlowLine('#10b981', 'rgba(16, 185, 129, 0.4)', 'throttle');
+            drawGlowLine('#ef4444', 'rgba(239, 68, 68, 0.4)', 'brake');
+            drawGlowLine('#3b82f6', 'rgba(59, 130, 246, 0.4)', 'steering');
         }
-
-        if (history.length < 2) return;
-
-        const xStep = width / (maxHistory - 1);
-
-        // Helper to draw line with glow
-        const drawGlowLine = (color: string, glowColor: string, dataKey: string) => {
-            // Glow effect
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = glowColor;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            history.forEach((point, i) => {
-                const x = i * xStep;
-                const y = height - (point[dataKey] / 100) * height;
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        };
-
-        drawGlowLine('#10b981', 'rgba(16, 185, 129, 0.4)', 'throttle');
-        drawGlowLine('#ef4444', 'rgba(239, 68, 68, 0.4)', 'brake');
-        drawGlowLine('#3b82f6', 'rgba(59, 130, 246, 0.4)', 'steering');
     }, [history]);
 
     const refresh = () => {
