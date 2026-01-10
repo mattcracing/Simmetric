@@ -208,7 +208,7 @@ export default function SimagicPedalTelemetry() {
                         </div>
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">SIMMETRIC</h1>
-                            <p className="text-sm text-zinc-500">Professional Pedal Telemetry</p>
+                            <p className="text-sm text-zinc-500">Simagic Pedal Telemetry</p>
                         </div>
                     </div>
 
