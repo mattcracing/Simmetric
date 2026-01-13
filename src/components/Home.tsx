@@ -26,9 +26,9 @@ const SteeringWheel = ({ angle }: { angle: number }) => (
                 {/* Simplified Outer Ring */}
                 <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8" className="text-zinc-1000" />
                 {/* Top Marker Line */}
-                <rect x="48" y="1" width="4" height="8" rx="1" fill="currentColor" className="text-red-500" />
+                <rect x="48" y="1" width="4" height="8" rx="1" fill="currentColor" className="text-red-600" />
             </svg>
-            <Activity className="w-8 h-8 text-red-500 relative z-10" />
+            <Activity className="w-8 h-8 text-red-600 relative z-10" />
         </div>
 
     </div>
