@@ -285,13 +285,6 @@ export default function SimagicPedalTelemetry() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 animate-slide-up">
                         <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
-                                <Clock className="w-4 h-4 text-zinc-400" />
-                                <span className="text-xs text-zinc-500 uppercase tracking-wide">Session Time</span>
-                            </div>
-                            <p className="text-2xl font-bold font-mono">{formatSessionTime()}</p>
-                        </div>
-                        <div className="glass-strong rounded-xl p-4 transition-smooth">
-                            <div className="flex items-center gap-2 mb-1">
                                 <ChevronsUp className="w-4 h-4 text-green-500" />
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Throttle</span>
                             </div>
@@ -303,6 +296,13 @@ export default function SimagicPedalTelemetry() {
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Brake</span>
                             </div>
                             <p className="text-2xl font-bold font-mono text-red-500">{sessionStats.peakBrake.toFixed(0)}%</p>
+                        </div>
+                        <div className="glass-strong rounded-xl p-4 transition-smooth">
+                            <div className="flex items-center gap-2 mb-1">
+                                <Clock className="w-4 h-4 text-white" />
+                                <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Steering Angle</span>
+                            </div>
+                            <p className="text-2xl font-bold font-mono text-blue-500">{sessionStats.peakSteering.toFixed(0)}°</p>
                         </div>
                     </div>
                 )}
@@ -419,7 +419,7 @@ export default function SimagicPedalTelemetry() {
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-green-500 mt-0.5">▸</span>
-                            <span>This app reads pedal data via the browser's Gamepad API</span>
+                            <span>Go race!</span>
                         </li>
                     </ul>
 
