@@ -14,10 +14,34 @@ interface HistoryItem {
     steering: number;
 }
 
+const SteeringWheel = ({ angle }: { angle: number }) => (
+    <div className="relative w-full aspect-square max-w-[200px] mx-auto flex items-center justify-center">
+
+        {/* Rotating Wheel */}
+        <div
+            className="relative w-4/5 h-4/5 transition-transform duration-75 ease-out"
+            style={{ transform: `rotate(${angle}deg)` }}
+        >
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+                {/* Simplified Outer Ring */}
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8" className="text-zinc-600" />
+
+                {/* Center dot */}
+                <circle cx="50" cy="50" r="4" fill="currentColor" className="text-zinc-600" />
+
+                {/* Top Marker Line */}
+                <rect x="48" y="1" width="4" height="8" rx="1" fill="currentColor" className="text-red-500 shadow-lg" />
+            </svg>
+        </div>
+
+    </div>
+);
+
 export default function SimagicPedalTelemetry() {
     const [throttle, setThrottle] = useState(0);
     const [brake, setBrake] = useState(0);
     const [steering, setSteering] = useState(0);
+    const [steeringAngle, setSteeringAngle] = useState(0);
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [connectionStatus, setConnectionStatus] = useState('polling');
     const [lastUpdate, setLastUpdate] = useState(Date.now());
@@ -65,6 +89,7 @@ export default function SimagicPedalTelemetry() {
                     setThrottle(newThrottle);
                     setBrake(newBrake);
                     setSteering(newSteering);
+                    setSteeringAngle(steeringAxis * 450); // Map -1 to 1 into -450 to 450 degrees
 
                     // Update session stats with peak values
                     setSessionStats(prev => ({
@@ -89,6 +114,7 @@ export default function SimagicPedalTelemetry() {
                     setThrottle(((1 - tAxis) / 2) * 100);
                     setBrake(((1 - bAxis) / 2) * 100);
                     setSteering(((1 - cAxis) / 2) * 100);
+                    setSteeringAngle(cAxis * 450);
                     setLastUpdate(Date.now());
                     setConnectionStatus('connected-generic');
                 }
@@ -139,7 +165,6 @@ export default function SimagicPedalTelemetry() {
         if (ctx) {        // Background with subtle gradient
             const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
             bgGradient.addColorStop(0, '#0a0a0a');
-            bgGradient.addColorStop(1, '#1a1a1a');
             ctx.fillStyle = bgGradient;
             ctx.fillRect(0, 0, width, height);
 
@@ -158,11 +183,7 @@ export default function SimagicPedalTelemetry() {
 
             const xStep = width / (maxHistory - 1);
 
-            // Helper to draw line with glow
-            const drawGlowLine = (color: string, glowColor: string, dataKey: keyof HistoryItem) => {
-                // Glow effect
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = glowColor;
+            const drawAxis = (color: string, dataKey: keyof HistoryItem) => {
                 ctx.strokeStyle = color;
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
@@ -176,12 +197,11 @@ export default function SimagicPedalTelemetry() {
                     }
                 });
                 ctx.stroke();
-                ctx.shadowBlur = 0;
             };
 
-            drawGlowLine('#10b981', 'rgba(16, 185, 129, 0.4)', 'throttle');
-            drawGlowLine('#ef4444', 'rgba(239, 68, 68, 0.4)', 'brake');
-            drawGlowLine('#3b82f6', 'rgba(59, 130, 246, 0.4)', 'steering');
+            drawAxis('#10b981', 'throttle');
+            drawAxis('#ef4444', 'brake');
+            drawAxis('#3b82f6', 'steering');
         }
     }, [history]);
 
@@ -302,15 +322,40 @@ export default function SimagicPedalTelemetry() {
 
                 {/* Main Telemetry Display */}
                 <div className="glass-strong rounded-2xl p-6 border border-zinc-800/50 shadow-2xl animate-slide-up">
-                    {/* Graph */}
-                    <div className="bg-black rounded-xl p-3 mb-6 border border-zinc-900">
-                        <canvas
-                            ref={canvasRef}
-                            width={1200}
-                            height={300}
-                            className="w-full"
-                            style={{ imageRendering: 'crisp-edges' }}
-                        />
+                    {/* Graph and Steering Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+                        {/* Graph */}
+                        <div className="lg:col-span-9 rounded-xl p-3 overflow-hidden min-h-[300px]">
+                            <canvas
+                                ref={canvasRef}
+                                width={1200}
+                                height={300}
+                                className="w-full h-full"
+                                style={{ imageRendering: 'crisp-edges' }}
+                            />
+                        </div>
+
+                        {/* Steering Wheel */}
+                        <div className="lg:col-span-3  p-4 flex flex-col items-center justify-center">
+                            <SteeringWheel angle={steeringAngle} />
+                            <div className="mt-6 w-full space-y-2">
+                                <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1">
+                                    <span>L</span>
+                                    <span>Center</span>
+                                    <span>R</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
+                                    <div
+                                        className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
+                                        style={{
+                                            left: steeringAngle < 0 ? `${50 + (steeringAngle / 9)}%` : '50%',
+                                            right: steeringAngle > 0 ? `${50 - (steeringAngle / 9)}%` : '50%'
+                                        }}
+                                    />
+                                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-600 -translate-x-1/2" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Pedal Bars */}
