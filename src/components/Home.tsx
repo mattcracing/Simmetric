@@ -204,13 +204,6 @@ export default function SimagicPedalTelemetry() {
         setLastUpdate(Date.now());
     };
 
-    const formatSessionTime = () => {
-        const elapsed = Math.floor((Date.now() - sessionStats.startTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
     return (
         <div className="min-h-screen bg-black text-white p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
