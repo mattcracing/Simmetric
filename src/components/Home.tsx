@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Activity, RefreshCw, AlertCircle, Clock, Tv2Icon, LineChartIcon, ChevronsUp, ChevronsDown } from 'lucide-react';
+import { Activity, RefreshCw, AlertCircle, Tv2Icon, LineChartIcon, ChevronsUp, ChevronsDown, Mountain } from 'lucide-react';
 
 interface SessionStats {
     startTime: number;
@@ -299,7 +299,7 @@ export default function SimagicPedalTelemetry() {
                         </div>
                         <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
-                                <Clock className="w-4 h-4 text-white" />
+                                <Mountain className="w-4 h-4 text-white" />
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Steering Angle</span>
                             </div>
                             <p className="text-2xl font-bold font-mono text-blue-500">{sessionStats.peakSteering.toFixed(0)}°</p>
