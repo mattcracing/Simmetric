@@ -19,19 +19,17 @@ const SteeringWheel = ({ angle }: { angle: number }) => (
 
         {/* Rotating Wheel */}
         <div
-            className="relative w-4/5 h-4/5 transition-transform duration-75 ease-out"
+            className="relative w-4/5 h-4/5 transition-transform duration-75 ease-out flex items-center justify-center"
             style={{ transform: `rotate(${angle}deg)` }}
         >
-            <svg viewBox="0 0 100 100" className="w-full h-full">
+            <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0">
                 {/* Simplified Outer Ring */}
                 <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8" className="text-zinc-600" />
-
-                {/* Center dot */}
-                <circle cx="50" cy="50" r="4" fill="currentColor" className="text-zinc-600" />
 
                 {/* Top Marker Line */}
                 <rect x="48" y="1" width="4" height="8" rx="1" fill="currentColor" className="text-red-500 shadow-lg" />
             </svg>
+            <Activity className="w-8 h-8 text-red-500 relative z-10" />
         </div>
 
     </div>
@@ -57,7 +55,7 @@ export default function SimagicPedalTelemetry() {
     const pollInterval = useRef<number | null>(null);
     const historyInterval = useRef<number | null>(null);
 
-    // Poll for gamepad input (SimPro devices appear as gamepads)
+    // Poll for gamepad input
     useEffect(() => {
         const pollGamepads = () => {
             const gamepads = navigator.getGamepads();
@@ -180,9 +178,7 @@ export default function SimagicPedalTelemetry() {
             }
 
             if (history.length < 2) return;
-
             const xStep = width / (maxHistory - 1);
-
             const drawAxis = (color: string, dataKey: keyof HistoryItem) => {
                 ctx.strokeStyle = color;
                 ctx.lineWidth = 2.5;
@@ -269,7 +265,7 @@ export default function SimagicPedalTelemetry() {
                 {connectionStatus === 'no-device' && (
                     <div className="mb-6 glass-strong rounded-2xl p-8 text-center animate-slide-up">
                         <div className="max-w-2xl mx-auto">
-                            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center">
+                            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500 flex items-center justify-center">
                                 <Activity className="w-10 h-10 text-white" />
                             </div>
                             <h2 className="text-2xl md:text-3xl font-bold mb-3">Welcome to Simmetric</h2>
@@ -296,21 +292,21 @@ export default function SimagicPedalTelemetry() {
                 {/* Session Stats Bar */}
                 {connectionStatus !== 'no-device' && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 animate-slide-up">
-                        <div className="glass-strong rounded-xl p-4 transition-smooth hover:scale-105">
+                        <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
                                 <Clock className="w-4 h-4 text-zinc-400" />
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Session Time</span>
                             </div>
                             <p className="text-2xl font-bold font-mono">{formatSessionTime()}</p>
                         </div>
-                        <div className="glass-strong rounded-xl p-4 transition-smooth hover:scale-105">
+                        <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-green-400" />
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Throttle</span>
                             </div>
                             <p className="text-2xl font-bold font-mono text-green-400">{sessionStats.peakThrottle.toFixed(0)}%</p>
                         </div>
-                        <div className="glass-strong rounded-xl p-4 transition-smooth hover:scale-105">
+                        <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-red-400" />
                                 <span className="text-xs text-zinc-500 uppercase tracking-wide">Peak Brake</span>
@@ -321,115 +317,118 @@ export default function SimagicPedalTelemetry() {
                 )}
 
                 {/* Main Telemetry Display */}
-                <div className="glass-strong rounded-2xl p-6 border border-zinc-800/50 shadow-2xl animate-slide-up">
-                    {/* Graph and Steering Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-                        {/* Graph */}
-                        <div className="lg:col-span-9 rounded-xl p-3 overflow-hidden min-h-[300px]">
-                            <canvas
-                                ref={canvasRef}
-                                width={1200}
-                                height={300}
-                                className="w-full h-full"
-                                style={{ imageRendering: 'crisp-edges' }}
-                            />
+                {connectionStatus === 'connected' && (
+                    <div className="glass-strong rounded-2xl p-6 border border-zinc-800/50 shadow-2xl animate-slide-up">
+                        {/* Graph and Steering Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+                            {/* Graph */}
+                            <div className="lg:col-span-9 rounded-xl p-3 overflow-hidden min-h-[300px]">
+                                <canvas
+                                    ref={canvasRef}
+                                    width={1200}
+                                    height={300}
+                                    className="w-full h-full"
+                                    style={{ imageRendering: 'crisp-edges' }}
+                                />
+                            </div>
+
+                            {/* Steering Wheel */}
+                            <div className="lg:col-span-3  p-4 flex flex-col items-center justify-center">
+                                <SteeringWheel angle={steeringAngle} />
+                                <div className="mt-6 w-full space-y-2">
+                                    <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1">
+                                        <span>L</span>
+                                        <span>Center</span>
+                                        <span>R</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
+                                        <div
+                                            className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
+                                            style={{
+                                                left: steeringAngle < 0 ? `${50 + (steeringAngle / 9)}%` : '50%',
+                                                right: steeringAngle > 0 ? `${50 - (steeringAngle / 9)}%` : '50%'
+                                            }}
+                                        />
+                                        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-600 -translate-x-1/2" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Steering Wheel */}
-                        <div className="lg:col-span-3  p-4 flex flex-col items-center justify-center">
-                            <SteeringWheel angle={steeringAngle} />
-                            <div className="mt-6 w-full space-y-2">
-                                <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1">
-                                    <span>L</span>
-                                    <span>Center</span>
-                                    <span>R</span>
+
+                        {/* Pedal Bars */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Throttle */}
+                            <div className="transition-smooth">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-green-400 font-bold text-lg tracking-wide">THROTTLE</span>
+                                    <span className="text-green-400 font-mono text-2xl font-bold">
+                                        {throttle.toFixed(0)}%
+                                    </span>
                                 </div>
-                                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
+                                <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
                                     <div
-                                        className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
+                                        className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-75 relative"
                                         style={{
-                                            left: steeringAngle < 0 ? `${50 + (steeringAngle / 9)}%` : '50%',
-                                            right: steeringAngle > 0 ? `${50 - (steeringAngle / 9)}%` : '50%'
+                                            width: `${throttle}%`,
+                                            boxShadow: throttle > 5 ? '0 0 20px rgba(16, 185, 129, 0.5)' : 'none'
                                         }}
-                                    />
-                                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-600 -translate-x-1/2" />
+                                    >
+                                        {throttle > 5 && (
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Brake */}
+                            <div className="transition-smooth">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-red-400 font-bold text-lg tracking-wide">BRAKE</span>
+                                    <span className="text-red-400 font-mono text-2xl font-bold">
+                                        {brake.toFixed(0)}%
+                                    </span>
+                                </div>
+                                <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-75 relative"
+                                        style={{
+                                            width: `${brake}%`,
+                                            boxShadow: brake > 5 ? '0 0 20px rgba(239, 68, 68, 0.5)' : 'none'
+                                        }}
+                                    >
+                                        {brake > 5 && (
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Steering */}
+                            <div className="transition-smooth">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-blue-400 font-bold text-lg tracking-wide">STEERING</span>
+                                    <span className="text-blue-400 font-mono text-2xl font-bold">
+                                        {steering.toFixed(0)}%
+                                    </span>
+                                </div>
+                                <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-75 relative"
+                                        style={{
+                                            width: `${steering}%`,
+                                            boxShadow: steering > 5 ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
+                                        }}
+                                    >
+                                        {steering > 5 && (
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Pedal Bars */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Throttle */}
-                        <div className="transition-smooth hover:scale-105">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-green-400 font-bold text-lg tracking-wide">THROTTLE</span>
-                                <span className="text-green-400 font-mono text-2xl font-bold">
-                                    {throttle.toFixed(0)}%
-                                </span>
-                            </div>
-                            <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
-                                <div
-                                    className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-75 relative"
-                                    style={{
-                                        width: `${throttle}%`,
-                                        boxShadow: throttle > 5 ? '0 0 20px rgba(16, 185, 129, 0.5)' : 'none'
-                                    }}
-                                >
-                                    {throttle > 5 && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Brake */}
-                        <div className="transition-smooth hover:scale-105">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-red-400 font-bold text-lg tracking-wide">BRAKE</span>
-                                <span className="text-red-400 font-mono text-2xl font-bold">
-                                    {brake.toFixed(0)}%
-                                </span>
-                            </div>
-                            <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
-                                <div
-                                    className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-75 relative"
-                                    style={{
-                                        width: `${brake}%`,
-                                        boxShadow: brake > 5 ? '0 0 20px rgba(239, 68, 68, 0.5)' : 'none'
-                                    }}
-                                >
-                                    {brake > 5 && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Clutch */}
-                        <div className="transition-smooth hover:scale-105">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-blue-400 font-bold text-lg tracking-wide">STEERING</span>
-                                <span className="text-blue-400 font-mono text-2xl font-bold">
-                                    {steering.toFixed(0)}%
-                                </span>
-                            </div>
-                            <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
-                                <div
-                                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-75 relative"
-                                    style={{
-                                        width: `${steering}%`,
-                                        boxShadow: steering > 5 ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
-                                    }}
-                                >
-                                    {steering > 5 && (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/20" />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                )}
 
                 {/* Setup Instructions */}
                 <div className="mt-6 glass rounded-xl p-5 animate-slide-up">
