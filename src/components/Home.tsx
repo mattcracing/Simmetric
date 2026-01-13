@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Activity, RefreshCw, AlertCircle, TrendingUp, Clock, Target } from 'lucide-react';
+import { Activity, RefreshCw, AlertCircle, TrendingUp, Clock, Target, TvIcon, Tv2Icon, LineChartIcon } from 'lucide-react';
 
 interface SessionStats {
     startTime: number;
@@ -274,12 +274,12 @@ export default function SimagicPedalTelemetry() {
                             </p>
                             <div className="grid md:grid-cols-2 gap-4 text-left">
                                 <div className="glass p-4 rounded-xl">
-                                    <TrendingUp className="w-8 h-8 text-green-500 mb-2" />
+                                    <Tv2Icon className="w-8 h-8 text-green-500 mb-2" />
                                     <h3 className="font-semibold mb-1">Live Performance</h3>
                                     <p className="text-sm text-zinc-400">Real-time pedal input visualization</p>
                                 </div>
                                 <div className="glass p-4 rounded-xl">
-                                    <Target className="w-8 h-8 text-blue-500 mb-2" />
+                                    <LineChartIcon className="w-8 h-8 text-blue-500 mb-2" />
                                     <h3 className="font-semibold mb-1">Session Stats</h3>
                                     <p className="text-sm text-zinc-400">Track session time and peak values</p>
                                 </div>
