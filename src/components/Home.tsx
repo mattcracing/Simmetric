@@ -83,7 +83,7 @@ export default function SimagicPedalTelemetry() {
                     const newThrottle = throttleAxis === 0 && throttle === 0 ? 0 : ((throttleAxis + 1) / 2) * 100;
                     const newBrake = brakeAxis === 0 && brake === 0 ? 0 : ((brakeAxis + 1) / 2) * 100;
                     const rawSteeringAngle = steeringAxis * 450;
-                    const newSteering = Math.abs(steeringAxis) * 100;
+                    const newSteering = steeringAxis * 100; // Signed tracking for graph
 
                     setThrottle(newThrottle);
                     setBrake(newBrake);
@@ -112,7 +112,7 @@ export default function SimagicPedalTelemetry() {
                     const cAxis = gamepad.axes[0] || 0;
                     setThrottle(((1 - tAxis) / 2) * 100);
                     setBrake(((1 - bAxis) / 2) * 100);
-                    setSteering(((1 - cAxis) / 2) * 100);
+                    setSteering(cAxis * 100); // Signed tracking
                     setSteeringAngle(cAxis * 450);
                     setLastUpdate(Date.now());
                     setConnectionStatus('connected-generic');
@@ -185,7 +185,16 @@ export default function SimagicPedalTelemetry() {
                 ctx.beginPath();
                 history.forEach((point, i) => {
                     const x = i * xStep;
-                    const y = height - (point[dataKey] / 100) * height;
+                    const value = point[dataKey];
+                    let y;
+
+                    if (dataKey === 'steering') {
+                        // 0 is middle, negative (left) is up, positive (right) is down
+                        y = (height / 2) + (value / 100) * (height / 2);
+                    } else {
+                        y = height - (value / 100) * height;
+                    }
+
                     if (i === 0) {
                         ctx.moveTo(x, y);
                     } else {
@@ -385,7 +394,7 @@ export default function SimagicPedalTelemetry() {
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-blue-500 font-bold text-lg tracking-wide">STEERING</span>
                                     <span className="text-blue-500 font-mono text-2xl font-bold">
-                                        {steering.toFixed(0)}%
+                                        {Math.abs(steering).toFixed(0)}%
                                     </span>
                                 </div>
                                 <div className="h-10 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
