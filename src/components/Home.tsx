@@ -330,23 +330,6 @@ export default function SimagicPedalTelemetry() {
                             {/* Steering Wheel */}
                             <div className="lg:col-span-3  p-4 flex flex-col items-center justify-center">
                                 <SteeringWheel angle={steeringAngle} />
-                                <div className="mt-6 w-full space-y-2">
-                                    <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1">
-                                        <span>L</span>
-                                        <span>Center</span>
-                                        <span>R</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
-                                        <div
-                                            className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
-                                            style={{
-                                                left: steeringAngle < 0 ? `${50 + (steeringAngle / 9)}%` : '50%',
-                                                right: steeringAngle > 0 ? `${50 - (steeringAngle / 9)}%` : '50%'
-                                            }}
-                                        />
-                                        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-600 -translate-x-1/2" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -397,7 +380,12 @@ export default function SimagicPedalTelemetry() {
                                         {Math.abs(steering).toFixed(0)}%
                                     </span>
                                 </div>
-                                <div className="h-10 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
+                                <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1 mb-1">
+                                    <span>L</span>
+                                    <span>Center</span>
+                                    <span>R</span>
+                                </div>
+                                <div className="h-5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
                                     <div
                                         className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
                                         style={{
