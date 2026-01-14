@@ -70,8 +70,8 @@ export default function SimagicPedalTelemetry() {
                 )) {
                     foundSimagic = true;
 
-                    const throttleAxis = gamepad.axes[1] !== undefined ? gamepad.axes[1] : 0;
-                    const brakeAxis = gamepad.axes[2] !== undefined ? gamepad.axes[2] : 0;
+                    const throttleAxis = gamepad.axes[1] !== undefined ? gamepad.axes[1] : -1;
+                    const brakeAxis = gamepad.axes[2] !== undefined ? gamepad.axes[2] : -1;
                     const steeringAxis = gamepad.axes[0] !== undefined ? gamepad.axes[0] : 0;
 
                     setDebugInfo({
@@ -79,21 +79,23 @@ export default function SimagicPedalTelemetry() {
                         axes: gamepad.axes.map((v, i) => ({ index: i, value: v.toFixed(3) }))
                     });
 
-                    const newThrottle = ((throttleAxis + 1) / 2) * 100;
-                    const newBrake = ((brakeAxis + 1) / 2) * 100;
+                    // Avoid 50% initial state if axis hasn't moved yet (0 is default but maps to 50%)
+                    const newThrottle = throttleAxis === 0 && throttle === 0 ? 0 : ((throttleAxis + 1) / 2) * 100;
+                    const newBrake = brakeAxis === 0 && brake === 0 ? 0 : ((brakeAxis + 1) / 2) * 100;
+                    const rawSteeringAngle = steeringAxis * 450;
                     const newSteering = Math.abs(steeringAxis) * 100;
 
                     setThrottle(newThrottle);
                     setBrake(newBrake);
                     setSteering(newSteering);
-                    setSteeringAngle(steeringAxis * 450); // Map -1 to 1 into -450 to 450 degrees
+                    setSteeringAngle(rawSteeringAngle);
 
                     // Update session stats with peak values
                     setSessionStats(prev => ({
                         ...prev,
                         peakThrottle: Math.max(prev.peakThrottle, newThrottle),
                         peakBrake: Math.max(prev.peakBrake, newBrake),
-                        peakSteering: Math.max(prev.peakSteering, newSteering)
+                        peakSteering: Math.max(prev.peakSteering, Math.abs(rawSteeringAngle))
                     }));
 
                     setLastUpdate(Date.now());
@@ -105,7 +107,7 @@ export default function SimagicPedalTelemetry() {
             if (!foundSimagic && gamepads.some(g => g !== null)) {
                 const gamepad = gamepads.find(g => g !== null);
                 if (gamepad && gamepad.axes.length >= 2) {
-                    const tAxis = gamepad.axes[1] || 0;
+                    const tAxis = gamepad.axes[1] || -1;
                     const bAxis = gamepad.axes[2] || gamepad.axes[0] || 0;
                     const cAxis = gamepad.axes[0] || 0;
                     setThrottle(((1 - tAxis) / 2) * 100);
@@ -246,7 +248,7 @@ export default function SimagicPedalTelemetry() {
 
 
                 {/* Welcome State - Only show when no device */}
-                {connectionStatus === 'no-device' && (
+                {connectionStatus !== 'connected' && (
                     <div className="mb-6 glass-strong rounded-2xl p-8 text-center animate-slide-up">
                         <div className="max-w-2xl mx-auto">
                             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500 flex items-center justify-center">
@@ -274,7 +276,7 @@ export default function SimagicPedalTelemetry() {
 
 
                 {/* Session Stats Bar */}
-                {connectionStatus !== 'no-device' && (
+                {connectionStatus !== 'no-device' && connectionStatus !== 'polling' && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 animate-slide-up">
                         <div className="glass-strong rounded-xl p-4 transition-smooth">
                             <div className="flex items-center gap-2 mb-1">
@@ -386,13 +388,15 @@ export default function SimagicPedalTelemetry() {
                                         {steering.toFixed(0)}%
                                     </span>
                                 </div>
-                                <div className="h-10 bg-zinc-900/50 rounded-xl overflow-hidden border border-zinc-800">
+                                <div className="h-10 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
                                     <div
-                                        className="h-full bg-blue-500 transition-all duration-75 relative"
+                                        className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
                                         style={{
-                                            width: `${steering}%`
+                                            left: steeringAngle < 0 ? `${50 + (steeringAngle / 9)}%` : '50%',
+                                            right: steeringAngle > 0 ? `${50 - (steeringAngle / 9)}%` : '50%'
                                         }}
                                     />
+                                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-600 -translate-x-1/2" />
                                 </div>
                             </div>
                         </div>
