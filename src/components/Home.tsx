@@ -83,7 +83,7 @@ export default function SimagicPedalTelemetry() {
                     const newThrottle = throttleAxis === 0 && throttle === 0 ? 0 : ((throttleAxis + 1) / 2) * 100;
                     const newBrake = brakeAxis === 0 && brake === 0 ? 0 : ((brakeAxis + 1) / 2) * 100;
                     const rawSteeringAngle = steeringAxis * 450;
-                    const newSteering = steeringAxis * 100; // Signed tracking for graph
+                    const newSteering = steeringAxis * 100;
 
                     setThrottle(newThrottle);
                     setBrake(newBrake);
@@ -377,7 +377,7 @@ export default function SimagicPedalTelemetry() {
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-blue-500 font-bold text-lg tracking-wide">STEERING</span>
                                     <span className="text-blue-500 font-mono text-2xl font-bold">
-                                        {Math.abs(steering).toFixed(0)}%
+                                        {steeringAngle.toFixed(0)}°
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-[10px] text-zinc-500 uppercase font-bold px-1 mb-1">
