@@ -385,7 +385,7 @@ export default function SimagicPedalTelemetry() {
                                     <span>Center</span>
                                     <span>R</span>
                                 </div>
-                                <div className="h-5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50 relative">
+                                <div className="h-5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-700/50 relative">
                                     <div
                                         className="absolute top-0 bottom-0 bg-blue-500 transition-all duration-75"
                                         style={{
